@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test:
+    name: Clean-stack integration test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Public-safety scan
+        run: ./scripts/check-public-safety.sh
+
+      - name: Validate shell scripts
+        run: bash -n scripts/*.sh
+
+      - name: Start a clean local stack
+        run: ./scripts/dev-stack.sh reset
+
+      - name: Validate Compose model
+        run: docker compose config --quiet
+
+      - name: Run infrastructure smoke test
+        run: ./scripts/smoke-test.sh
+
+      - name: Exercise PowerShell status command
+        shell: pwsh
+        run: ./scripts/dev-stack.ps1 status
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes --remove-orphans
