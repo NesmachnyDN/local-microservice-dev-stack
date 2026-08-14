@@ -30,7 +30,7 @@ jobs:
         run: bash -n scripts/*.sh
 
       - name: Validate all Compose profiles
-        run: docker compose --profile all config --quiet
+        run: ./scripts/dev-stack.sh config all >/dev/null
 
       - name: Start a clean core stack
         run: ./scripts/dev-stack.sh reset core
