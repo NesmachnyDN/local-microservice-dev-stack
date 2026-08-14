@@ -3,6 +3,7 @@ name: local-microservice-dev-stack
 services:
   postgres:
     image: postgres:${POSTGRES_VERSION:-18.3}
+    profiles: ["core", "database", "all"]
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
@@ -23,6 +24,7 @@ services:
 
   kafka:
     image: apache/kafka:${KAFKA_VERSION:-4.3.1}
+    profiles: ["core", "messaging", "all"]
     ports:
       - "${KAFKA_PORT:-9092}:9092"
     healthcheck:
@@ -31,6 +33,17 @@ services:
       timeout: 5s
       retries: 20
       start_period: 10s
+
+  artemis:
+    image: apache/artemis:${ARTEMIS_VERSION:-2.55.0-alpine}
+    profiles: ["broker", "all"]
+    ports:
+      - "${ARTEMIS_CORE_PORT:-61616}:61616"
+      - "${ARTEMIS_WEB_PORT:-8161}:8161"
+    environment:
+      ARTEMIS_USER: ${ARTEMIS_USER:-dev_artemis}
+      ARTEMIS_PASSWORD: ${ARTEMIS_PASSWORD:?ARTEMIS_PASSWORD must be set}
+      ANONYMOUS_LOGIN: "false"
 
 volumes:
   postgres-data:

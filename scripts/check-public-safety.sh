@@ -32,5 +32,6 @@ check_pattern 'private key material' '-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVAT
 check_pattern 'cloud or GitHub token' '(gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})'
 check_pattern 'RFC1918 IPv4 address' '(^|[^0-9])(10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|192\.168\.[0-9]{1,3}\.[0-9]{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3})([^0-9]|$)'
 check_pattern 'internal/corporate hostname' '([A-Za-z0-9-]+\.)+(corp|internal|intranet)(\.|[:/]|$)'
+check_pattern 'credential embedded in URL' '[a-z][a-z0-9+.-]*://[^[:space:]/:@]+:[^[:space:]@/]+@'
 
 exit "$fail"
