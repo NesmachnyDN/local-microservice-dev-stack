@@ -29,22 +29,43 @@ jobs:
       - name: Validate shell scripts
         run: bash -n scripts/*.sh
 
-      - name: Start a clean local stack
-        run: ./scripts/dev-stack.sh reset
+      - name: Validate all Compose profiles
+        run: docker compose --profile all config --quiet
 
-      - name: Validate Compose model
-        run: docker compose config --quiet
+      - name: Start a clean core stack
+        run: ./scripts/dev-stack.sh reset core
 
       - name: Run infrastructure smoke test
         run: ./scripts/smoke-test.sh
 
       - name: Exercise PowerShell status command
         shell: pwsh
-        run: ./scripts/dev-stack.ps1 status
+        run: ./scripts/dev-stack.ps1 status core
 
       - name: Show container logs on failure
         if: failure()
-        run: docker compose logs --no-color
+        run: docker compose --profile all logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
+  broker-profile-test:
+    name: Optional Artemis profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Start broker profile
+        run: ./scripts/dev-stack.sh reset broker
+
+      - name: Verify Artemis container
+        run: |
+          docker compose --profile broker ps artemis
+          test "$(docker compose --profile broker ps --status running -q artemis | wc -l)" -eq 1
 
       - name: Tear down
         if: always()
